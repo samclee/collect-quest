@@ -16,18 +16,20 @@ Object = Class{
 	end
 }
 
+-- Town
 Town = Class{
 	__includes = Object,
 
-	init = function(self, x, y, sprite, itemType, msg)
+	init = function(self, x, y, sprite, id, msg)
 		Object.init(self, x, y, sprite)
-		self.itemType = itemType
+		self.id = id
 		self.msg = msg
 	end
 }
 
+-- player
 player = Object(350, 250, love.graphics.newImage('assets/0.png'))
-player.inv = {corn = 0, pen = 0, napkin = 0}
+player.visited = {false, false, false}
 player.update = function(self)
 	local dx, dy = 0, 0
 
@@ -41,14 +43,14 @@ player.update = function(self)
 	self.y = self.y + dy * spd
 end
 
-
-textbox = { x = 0, y = 480, w = 800, h = 120, msg = '', active = false}
+-- textbox
+textbox = { w = 800, h = 120, x = 0, y = 600 - 120, msg = '', active = false}
 textbox.draw = function(self)
 	if self.active then
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.rectangle('fill', self.x, self.y, self.w, self.h)
 		love.graphics.setColor(1, 1, 1)
-		love.graphics.printf(self.msg, self.x + 20, self.y, 740)
+		love.graphics.printf(self.msg, self.x + 20, self.y, 760)
 	end
 end
 
@@ -61,9 +63,9 @@ function love.load()
 	love.audio.play(bgm)
 
 	towns = {
-		Town(10, 10, love.graphics.newImage('assets/1.png'), 'corn', '>You see a big ear of corn. Dope, another to add to the collection. Corn GET'),
-		Town(200, 400, love.graphics.newImage('assets/2.png'), 'pen', '>You find a fancy permanent marker. Time to vandalize something. Scribe ability +5'),
-		Town(600, 200, love.graphics.newImage('assets/3.png'), 'napkin', '>You get a free pack of napkins. They\'re kinda scratchy though. Hygiene LEVEL UP.'),
+		Town(10, 10, love.graphics.newImage('assets/1.png'), 1, '>You see a big ear of corn. Dope, another to add to the collection. Corn GET'),
+		Town(200, 400, love.graphics.newImage('assets/2.png'), 2, '>You find a fancy permanent marker. Time to vandalize something. Scribe ability +5'),
+		Town(600, 200, love.graphics.newImage('assets/3.png'), 3, '>You get a free pack of napkins. They\'re kinda scratchy though. Hygiene LEVEL UP.'),
 	}
 end
 
@@ -77,7 +79,7 @@ function love.draw()
 	end
 	player:draw()
 	textbox:draw()
-	if player.inv.corn > 0 and player.inv.pen > 0 and player.inv.napkin > 0 then
+	if player.visited[1] == true and player.visited[2] == true and player.visited[3] == true then
 		love.graphics.printf("YOU COLLECTED ALL THE THINGS", 0, 100, 800, 'center')
 	end
 end
@@ -90,7 +92,7 @@ function love.keypressed(k)
 			for i = 1, #towns do
 				if overlap(player, towns[i]) then
 					textbox.msg = towns[i].msg
-					player.inv[towns[i].itemType] = player.inv[towns[i].itemType] + 1
+					player.visited[towns[i].id] = true
 					textbox.active = true
 				end
 			end
